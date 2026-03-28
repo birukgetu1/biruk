@@ -1,33 +1,182 @@
 <!DOCTYPE html>
-<html>
-<body onload="getLocation()">
-1 <iframe src="https://giphy.com/embed/YTJXDIivNMPuNSMgc0" width="442" height="480" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/moodman-fail-life-backflip-YTJXDIivNMPuNSMgc0">via GIPHY</a></p>
-  
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+        }
+        .success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #2e7d32;
+        }
+        .info {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            border-left: 4px solid #1565c0;
+        }
+        .privacy-note {
+            font-size: 12px;
+            color: #666;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #fff3e0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Location Information</h2>
+        <p>This page demonstrates how to request and handle geolocation data with proper user consent.</p>
+        
+        <button onclick="requestLocation()">Share My Location</button>
+        
+        <div id="status"></div>
+        
+        <div class="privacy-note">
+            <strong>Privacy Notice:</strong> Your location is only shared if you explicitly consent. 
+            Location data is used only for demonstration purposes and is not stored permanently.
+            You can revoke access at any time through your browser settings.
+        </div>
+    </div>
 
+    <script>
+        const statusDiv = document.getElementById("status");
 
+        function requestLocation() {
+            // Check if geolocation is supported
+            if (!navigator.geolocation) {
+                showStatus("Geolocation is not supported by this browser.", "error");
+                return;
+            }
 
-<p id="demo"></p>
+            showStatus("Requesting location permission...", "info");
+            
+            // Request location with options for better user experience
+            const options = {
+                enableHighAccuracy: true,  // Use GPS if available
+                timeout: 10000,            // Timeout after 10 seconds
+                maximumAge: 0              // Don't use cached location
+            };
+            
+            navigator.geolocation.getCurrentPosition(
+                showPosition,    // Success callback
+                showError,       // Error callback
+                options
+            );
+        }
 
-<script>
-const x = document.getElementById("demo");
+        function showPosition(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            const accuracy = position.coords.accuracy;
+            
+            // Display location info to user
+            showStatus(
+                `Location obtained!<br>
+                Latitude: ${latitude}<br>
+                Longitude: ${longitude}<br>
+                Accuracy: ±${Math.round(accuracy)} meters`,
+                "success"
+            );
+            
+            // Send to server (with proper error handling)
+            sendLocationToServer(latitude, longitude);
+        }
 
-function getLocation() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(showPosition);
-  } else { 
-    x.innerHTML = "Geolocation is not supported by this browser.";
-  }
-}
+        function showError(error) {
+            let errorMessage = "";
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage = "Location access was denied. Please enable location services to use this feature.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage = "Location information is unavailable. Please check your device settings.";
+                    break;
+                case error.TIMEOUT:
+                    errorMessage = "The request to get your location timed out. Please try again.";
+                    break;
+                default:
+                    errorMessage = "An unknown error occurred while getting your location.";
+            }
+            showStatus(errorMessage, "error");
+        }
 
-function showPosition(position) {
-  const xhttp new XMLHttpRequest();
-xhttp.open("GET", "store.php?lat=" + position.coords.latitude "&long" position.coords.longitude);
-  xhttp.send();
-  
-  
-}
-</script>
+        function sendLocationToServer(lat, lng) {
+            // Validate inputs
+            if (typeof lat !== 'number' || typeof lng !== 'number') {
+                console.error("Invalid coordinates");
+                return;
+            }
+            
+            // Create URL with encoded parameters
+            const url = `store.php?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}&timestamp=${Date.now()}`;
+            
+            // Use Fetch API (modern approach)
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(data => {
+                console.log("Location sent successfully:", data);
+                // Optional: Show success message
+                // showStatus("Location data sent to server.", "info");
+            })
+            .catch(error => {
+                console.error("Error sending location:", error);
+                // Don't show error to user to avoid confusion, but log it
+            });
+        }
 
+        function showStatus(message, type) {
+            statusDiv.innerHTML = message;
+            statusDiv.className = type;
+            statusDiv.style.display = "block";
+        }
+    </script>
 </body>
 </html>
-

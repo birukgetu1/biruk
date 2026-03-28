@@ -3,180 +3,323 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Location Example</title>
+    <title>Share Location - Biruk Bot</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 20px;
-            line-height: 1.6;
         }
+        
         .container {
-            border: 1px solid #ddd;
-            padding: 20px;
-            border-radius: 8px;
-            background-color: #f9f9f9;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
         }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .bot-link {
+            background: #f0f0f0;
+            padding: 12px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .bot-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
         button {
-            background-color: #4CAF50;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 10px 20px;
             border: none;
-            border-radius: 4px;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 50px;
             cursor: pointer;
-            font-size: 16px;
+            width: 100%;
+            margin: 10px 0;
+            transition: transform 0.2s;
+            font-weight: 600;
         }
-        button:hover {
-            background-color: #45a049;
+        
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
-        #status {
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 4px;
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
-        .error {
-            background-color: #ffebee;
-            color: #c62828;
-            border-left: 4px solid #c62828;
+        
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            display: none;
+            animation: slideIn 0.3s ease;
         }
-        .success {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-            border-left: 4px solid #2e7d32;
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        .info {
-            background-color: #e3f2fd;
-            color: #1565c0;
-            border-left: 4px solid #1565c0;
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
         }
-        .privacy-note {
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+        
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .coords-box {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: monospace;
+            display: none;
+            text-align: left;
+        }
+        
+        .privacy {
             font-size: 12px;
             color: #666;
             margin-top: 20px;
             padding: 10px;
-            background-color: #fff3e0;
-            border-radius: 4px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .map-link {
+            color: #667eea;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        .github-link {
+            margin-top: 20px;
+            font-size: 12px;
+        }
+        
+        .github-link a {
+            color: #667eea;
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Location Information</h2>
-        <p>This page demonstrates how to request and handle geolocation data with proper user consent.</p>
+        <h1>📍 Share Location</h1>
+        <p class="subtitle">Send your location to @Biruklocationbot</p>
         
-        <button onclick="requestLocation()">Share My Location</button>
+        <div class="bot-link">
+            🤖 <a href="https://t.me/Biruklocationbot" target="_blank">@Biruklocationbot</a>
+        </div>
         
-        <div id="status"></div>
+        <button id="shareBtn" onclick="shareLocation()">
+            📍 Share My Current Location
+        </button>
         
-        <div class="privacy-note">
-            <strong>Privacy Notice:</strong> Your location is only shared if you explicitly consent. 
-            Location data is used only for demonstration purposes and is not stored permanently.
-            You can revoke access at any time through your browser settings.
+        <div id="status" class="status"></div>
+        <div id="coords" class="coords-box"></div>
+        
+        <div class="privacy">
+            🔒 Your location is sent directly to Telegram. You'll receive a notification on @Biruklocationbot
+        </div>
+        
+        <div class="github-link">
+            🚀 Running on GitHub Pages | No server required
         </div>
     </div>
 
     <script>
-        const statusDiv = document.getElementById("status");
-
-        function requestLocation() {
-            // Check if geolocation is supported
+        // Your bot credentials
+        const BOT_TOKEN = "8689283758:AAGAoRKk6uoS1NrC828IWkpizNYM__9K7Qg";
+        const CHAT_ID = "1755569425";
+        
+        const statusDiv = document.getElementById('status');
+        const coordsDiv = document.getElementById('coords');
+        const shareBtn = document.getElementById('shareBtn');
+        
+        function showStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            setTimeout(() => {
+                if (statusDiv.style.display === 'block') {
+                    statusDiv.style.display = 'none';
+                }
+            }, 5000);
+        }
+        
+        async function shareLocation() {
             if (!navigator.geolocation) {
-                showStatus("Geolocation is not supported by this browser.", "error");
+                showStatus('❌ Geolocation not supported by your browser', 'error');
                 return;
             }
-
-            showStatus("Requesting location permission...", "info");
             
-            // Request location with options for better user experience
-            const options = {
-                enableHighAccuracy: true,  // Use GPS if available
-                timeout: 10000,            // Timeout after 10 seconds
-                maximumAge: 0              // Don't use cached location
-            };
+            shareBtn.disabled = true;
+            shareBtn.innerHTML = '<span class="loader"></span> Getting your location...';
             
             navigator.geolocation.getCurrentPosition(
-                showPosition,    // Success callback
-                showError,       // Error callback
-                options
+                async (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const accuracy = position.coords.accuracy;
+                    
+                    // Show coordinates to user
+                    coordsDiv.innerHTML = `
+                        <strong>📍 Your Location:</strong><br>
+                        Latitude: ${lat.toFixed(6)}<br>
+                        Longitude: ${lng.toFixed(6)}<br>
+                        Accuracy: ±${Math.round(accuracy)} meters<br>
+                        <a href="https://maps.google.com/?q=${lat},${lng}" target="_blank" class="map-link">
+                            🗺️ View on Google Maps →
+                        </a>
+                    `;
+                    coordsDiv.style.display = 'block';
+                    
+                    showStatus('📤 Sending location to Telegram...', 'info');
+                    
+                    // Send to Telegram directly from JavaScript
+                    await sendToTelegram(lat, lng);
+                    
+                    shareBtn.disabled = false;
+                    shareBtn.innerHTML = '📍 Share My Current Location';
+                },
+                (error) => {
+                    let errorMsg = '';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMsg = '❌ Location access denied. Please enable location access in your browser settings.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMsg = '❌ Location unavailable. Please check your GPS.';
+                            break;
+                        case error.TIMEOUT:
+                            errorMsg = '⏱️ Timeout. Please try again.';
+                            break;
+                        default:
+                            errorMsg = '❌ Error getting location.';
+                    }
+                    showStatus(errorMsg, 'error');
+                    shareBtn.disabled = false;
+                    shareBtn.innerHTML = '📍 Share My Current Location';
+                }
             );
         }
-
-        function showPosition(position) {
-            const latitude = position.coords.latitude;
-            const longitude = position.coords.longitude;
-            const accuracy = position.coords.accuracy;
-            
-            // Display location info to user
-            showStatus(
-                `Location obtained!<br>
-                Latitude: ${latitude}<br>
-                Longitude: ${longitude}<br>
-                Accuracy: ±${Math.round(accuracy)} meters`,
-                "success"
-            );
-            
-            // Send to server (with proper error handling)
-            sendLocationToServer(latitude, longitude);
-        }
-
-        function showError(error) {
-            let errorMessage = "";
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    errorMessage = "Location access was denied. Please enable location services to use this feature.";
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    errorMessage = "Location information is unavailable. Please check your device settings.";
-                    break;
-                case error.TIMEOUT:
-                    errorMessage = "The request to get your location timed out. Please try again.";
-                    break;
-                default:
-                    errorMessage = "An unknown error occurred while getting your location.";
-            }
-            showStatus(errorMessage, "error");
-        }
-
-        function sendLocationToServer(lat, lng) {
-            // Validate inputs
-            if (typeof lat !== 'number' || typeof lng !== 'number') {
-                console.error("Invalid coordinates");
-                return;
-            }
-            
-            // Create URL with encoded parameters
-            const url = `store.php?lat=${encodeURIComponent(lat)}&lng=${encodeURIComponent(lng)}&timestamp=${Date.now()}`;
-            
-            // Use Fetch API (modern approach)
-            fetch(url, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
+        
+        async function sendToTelegram(lat, lng) {
+            try {
+                // Create the message
+                const time = new Date().toLocaleString();
+                const mapsLink = `https://maps.google.com/?q=${lat},${lng}`;
+                
+                const message = `📍 *NEW LOCATION SHARED!* 📍\n\n` +
+                    `*Coordinates:*\n` +
+                    `└ Latitude: \`${lat.toFixed(6)}\`\n` +
+                    `└ Longitude: \`${lng.toFixed(6)}\`\n\n` +
+                    `*Time:* \`${time}\`\n\n` +
+                    `*Link:* [🗺️ Open in Google Maps](${mapsLink})`;
+                
+                // Send to Telegram API
+                const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        chat_id: CHAT_ID,
+                        text: message,
+                        parse_mode: 'Markdown',
+                        disable_web_page_preview: true
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.ok) {
+                    showStatus('✅ Location sent successfully! Check your Telegram bot!', 'success');
+                } else {
+                    showStatus('⚠️ Failed to send: ' + data.description, 'error');
                 }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.text();
-            })
-            .then(data => {
-                console.log("Location sent successfully:", data);
-                // Optional: Show success message
-                // showStatus("Location data sent to server.", "info");
-            })
-            .catch(error => {
-                console.error("Error sending location:", error);
-                // Don't show error to user to avoid confusion, but log it
-            });
+            } catch (error) {
+                showStatus('❌ Connection error: ' + error.message, 'error');
+                console.error('Error:', error);
+            }
         }
-
-        function showStatus(message, type) {
-            statusDiv.innerHTML = message;
-            statusDiv.className = type;
-            statusDiv.style.display = "block";
-        }
+        
+        // Optional: Add keyboard shortcut (Ctrl+Enter to share)
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                shareLocation();
+            }
+        });
     </script>
 </body>
 </html>
